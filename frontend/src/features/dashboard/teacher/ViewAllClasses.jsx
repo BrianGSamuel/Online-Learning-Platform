@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
 import TeacherSidebar from "../../../components/TeacherSidebar/index";
 import TeacherHeader from "../../../components/TeacherHeader/index";
 import axios from "axios";
@@ -15,7 +13,6 @@ const ViewAllClasses = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [classToDelete, setClassToDelete] = useState(null);
     const navigate = useNavigate();
-    const location = useLocation();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -61,6 +58,16 @@ const ViewAllClasses = () => {
         fetchClasses();
     }, []);
 
+    // Auto-hide notification after 4 seconds
+    useEffect(() => {
+        if (notification.message) {
+            const timer = setTimeout(() => {
+                setNotification({ message: "", type: "" });
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
+
     const handleEdit = (classId) => {
         navigate(`/teacher/classes/${classId}/update`);
     };
@@ -99,29 +106,6 @@ const ViewAllClasses = () => {
         setShowDeleteModal(false);
         setClassToDelete(null);
     };
-
-    const pathnames = location.pathname.split("/").filter((x) => x);
-    const breadcrumbItems = pathnames.map((value, index) => {
-        const last = index === pathnames.length - 1;
-        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-        const displayName = value.charAt(0).toUpperCase() + value.slice(1);
-
-        return last ? (
-            <Typography key={to} color="text.primary">
-                {displayName}
-            </Typography>
-        ) : (
-            <MuiLink
-                key={to}
-                component={Link}
-                to={to}
-                underline="hover"
-                color="inherit"
-            >
-                {displayName}
-            </MuiLink>
-        );
-    });
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-gray-100">
@@ -195,88 +179,87 @@ const ViewAllClasses = () => {
             />
 
             <div className="flex min-h-screen">
-                    <div
-                      className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+                <div
+                    className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
                         isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
-                      }`}
-                    >
-                      <TeacherSidebar 
+                    }`}
+                >
+                    <TeacherSidebar 
                         isCollapsed={isSidebarCollapsed} 
                         toggleSidebar={toggleSidebar} 
-                      />
-                    </div>
-            
-                    <div
-                      className={`flex-1 transition-all duration-300 ${
+                    />
+                </div>
+
+                <div
+                    className={`flex-1 transition-all duration-300 ${
                         isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
-                      }`}
-                    >
-                      <div
-                        className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b fixed top-0 w-full z-30 transition-all duration-300 ${
-                          isSidebarCollapsed 
-                            ? "ml-[60px] w-[calc(100%-60px)]" 
-                            : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
-                        }`}
-                      >
-                        {/* Breadcrumbs */}
-                    <div
-                      className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
-                        isSidebarCollapsed
-                          ? "ml-[60px] w-[calc(100%-60px)]"
-                          : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
-                      }`}
-                    >
-                      <Breadcrumbs aria-label="breadcrumb">
-                        
-                        {breadcrumbItems}
-                      </Breadcrumbs>
-                      </div></div>
-                    
-                      
-                      <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
-                        <div className="max-w-5xl mx-auto">
-                            <motion.h2
+                    }`}
+                >
+                    {/* Main Content Area */}
+                    <div className="mt-[50px] p-6 md:p-8 overflow-y-auto h-[calc(100vh-50px)]">
+                        <div className="max-w-7xl mx-auto">
+                            {/* Header Section */}
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
-                                className="text-3xl font-extrabold text-center text-indigo-600 mb-8 tracking-tight"
+                                className="text-center mb-10"
                             >
-                                My Classes
-                            </motion.h2>
+                                <h1 className="text-4xl font-extrabold text-indigo-600 mb-4 tracking-tight">
+                                    My Classes
+                                </h1>
+                                <div className="w-24 h-1 bg-indigo-500 rounded-full mx-auto mb-4"></div>
+                                <p className="text-gray-600 text-lg">
+                                    Manage and organize your teaching classes
+                                </p>
+                            </motion.div>
 
+                            {/* Content Section */}
                             {loading ? (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="text-center text-indigo-600 font-semibold"
+                                    className="text-center py-16"
                                 >
-                                    Loading...
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                                    <span className="text-indigo-600 font-semibold text-lg">Loading classes...</span>
                                 </motion.div>
                             ) : error ? (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="text-red-600 bg-red-100 p-3 rounded-md text-center shadow-sm"
+                                    className="text-center py-16"
                                 >
-                                    {error}
+                                    <div className="bg-red-100 border border-red-300 rounded-xl p-6 max-w-md mx-auto">
+                                        <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Classes</h3>
+                                        <p className="text-red-600">{error}</p>
+                                    </div>
                                 </motion.div>
                             ) : classes.length === 0 ? (
-                                <motion.p
+                                <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="text-gray-600 text-center text-lg"
+                                    className="text-center py-16"
                                 >
-                                    No classes found
-                                </motion.p>
+                                    <div className="max-w-md mx-auto">
+                                        <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <span className="text-2xl">📚</span>
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-gray-800 mb-3">No Classes Yet</h3>
+                                        <p className="text-gray-600">
+                                            You haven't created any classes yet. Start by creating your first class!
+                                        </p>
+                                    </div>
+                                </motion.div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                     {classes.map((classItem, index) => (
                                         <motion.div
                                             key={classItem._id}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                                            className="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-xl transition-all duration-300"
+                                            className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                                         >
                                             <div className="relative mb-4">
                                                 {classItem.coverPhoto ? (
@@ -286,8 +269,11 @@ const ViewAllClasses = () => {
                                                         className="w-full h-40 object-cover rounded-lg"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center">
-                                                        <span className="text-gray-500">No Cover Photo</span>
+                                                    <div className="w-full h-40 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
+                                                        <div className="text-center">
+                                                            <span className="text-4xl mb-2 block">🎓</span>
+                                                            <span className="text-indigo-600 font-medium">No Cover Photo</span>
+                                                        </div>
                                                     </div>
                                                 )}
                                                 <span
@@ -298,13 +284,23 @@ const ViewAllClasses = () => {
                                                     {classItem.isActive ? "Active" : "Inactive"}
                                                 </span>
                                             </div>
+                                            
                                             <h3 className="text-xl font-semibold text-gray-800 mb-2">{classItem.subject}</h3>
-                                            <p className="text-indigo-600 font-medium mb-2">
-                                                Fee: ${classItem.monthlyFee}/month
-                                            </p>
-                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                            
+                                            <div className="bg-indigo-50 px-3 py-1 rounded-lg inline-block mb-3">
+                                                <p className="text-indigo-600 font-semibold text-sm">
+                                                    Fee: ${classItem.monthlyFee}/month
+                                                </p>
+                                            </div>
+                                            
+                                            <p className="text-gray-600 text-sm mb-4 overflow-hidden" style={{
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical'
+                                            }}>
                                                 {classItem.description || "No description available"}
                                             </p>
+                                            
                                             <div className="flex space-x-3">
                                                 <motion.button
                                                     whileHover={{ scale: 1.05 }}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Typography, Box, Grid, Card, CardContent, CardMedia, Button, Alert, Skeleton, Chip } from "@mui/material";
+import { Typography, Box, Grid, Card, CardContent, Button, Alert, Skeleton, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { School, Person, AttachMoney, Description } from "@mui/icons-material";
 import TeacherSidebar from "../../../components/TeacherSidebar/index";
@@ -54,20 +54,6 @@ const SelectClassForMaterials = () => {
         navigate(`/${classId}/materials`);
     };
 
-    // Default image for classes without images
-    const getDefaultImage = (subject) => {
-        const images = {
-            'Mathematics': 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=250&fit=crop',
-            'Science': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=250&fit=crop',
-            'English': 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=250&fit=crop',
-            'History': 'https://images.unsplash.com/photo-1471897488648-5eae4ac6686b?w=400&h=250&fit=crop',
-            'Physics': 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400&h=250&fit=crop',
-            'Chemistry': 'https://images.unsplash.com/photo-1564325724739-bae0bd08762c?w=400&h=250&fit=crop',
-            'Biology': 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop'
-        };
-        return images[subject] || 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=250&fit=crop';
-    };
-
     const SkeletonCard = () => (
         <Grid item xs={12} sm={6} lg={4}>
             <Card sx={{ 
@@ -75,7 +61,6 @@ const SelectClassForMaterials = () => {
                 overflow: 'hidden',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.08)'
             }}>
-                <Skeleton variant="rectangular" height={200} />
                 <CardContent sx={{ p: 3 }}>
                     <Skeleton variant="text" height={32} width="80%" />
                     <Skeleton variant="text" height={20} width="60%" sx={{ mt: 1 }} />
@@ -111,31 +96,36 @@ const SelectClassForMaterials = () => {
                     {/* Hero Section */}
                     <div className="pt-20 pb-8 px-6">
                         <Box sx={{ maxWidth: 1400, mx: "auto" }}>
-                            <div className="text-center mb-8">
-                                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mb-4">
-                                    <School sx={{ fontSize: 32, color: 'white' }} />
-                                </div>
-                                <Typography 
-                                    variant="h3" 
-                                    sx={{ 
-                                        fontWeight: 800, 
-                                        background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
-                                        backgroundClip: 'text',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        mb: 2
-                                    }}
-                                >
-                                    Class Materials Hub
-                                </Typography>
-                                <Typography 
-                                    variant="h6" 
-                                    color="text.secondary" 
-                                    sx={{ maxWidth: 600, mx: 'auto', lineHeight: 1.6 }}
-                                >
-                                    Select a class to manage learning materials, resources, and educational content
-                                </Typography>
-                            </div>
+                            <div className="flex items-center justify-center gap-6 mb-8">
+    {/* Icon */}
+    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full">
+        <School sx={{ fontSize: 32, color: 'white' }} />
+    </div>
+
+    {/* Text content */}
+    <div>
+        <Typography 
+            variant="h3" 
+            sx={{ 
+                fontWeight: 800, 
+                background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1
+            }}
+        >
+            Class Materials Hub
+        </Typography>
+        <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            sx={{ maxWidth: 600, lineHeight: 1.6 }}
+        >
+            Select a class to manage learning materials, resources, and educational content
+        </Typography>
+    </div>
+</div>
 
                             {error && (
                                 <Alert 
@@ -204,23 +194,12 @@ const SelectClassForMaterials = () => {
                                                 flexDirection: 'column',
                                                 width: '100%',
                                                 height: '100%',
-                                                minHeight: '480px',
+                                                minHeight: '320px',
                                                 '&:hover': {
                                                     transform: 'translateY(-8px)',
                                                     boxShadow: '0 20px 40px rgba(0,0,0,0.12)',
                                                 }
                                             }}>
-                                                <CardMedia
-                                                    component="img"
-                                                    height="200"
-                                                    image={cls.image || getDefaultImage(cls.subject)}
-                                                    alt={cls.subject}
-                                                    sx={{
-                                                        objectFit: 'cover',
-                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                        flexShrink: 0
-                                                    }}
-                                                />
                                                 <CardContent sx={{ 
                                                     p: 3,
                                                     display: 'flex',

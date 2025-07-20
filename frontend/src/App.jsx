@@ -7,7 +7,7 @@ import AdminDashboard from "./features/dashboard/admin/AdminDashboard";
 import Subscription from "./features/dashboard/admin/Subscription";
 import TeacherDashboard from "./features/dashboard/teacher/TeacherDashboard";
 import StudentDashboard from "./features/dashboard/student/StudentDashboard";
-import InstituteDashboard from "./features/dashboard/institute/InstituteDashboard";
+
 import Login from "./features/auth/Login";
 //import Register from "./features/auth/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -78,8 +78,6 @@ import TeacherNotices from "./features/dashboard/teacher/TeacherNotices";
 import AdminNotices from "./features/dashboard/admin/AdminNotices";
 import TeacherNoticesView from "./features/dashboard/teacher/TeacherNoticesView";
 
-import InstituteNoticesView from "./features/dashboard/institute/InstituteNoticesView";
-
 import Report from "./features/dashboard/teacher/Report";
 
 
@@ -91,9 +89,6 @@ import TeacherSupportTickets from "./features/dashboard/teacher/TeacherSupportTi
 import TeacherSupportTicketDetails from "./features/dashboard/teacher/TeacherSupportTicketDetails";
 
 
-import InstituteSupportForm from "./features/dashboard/institute/InstituteSupportForm";
-import InstituteSupportTickets from "./features/dashboard/institute/InstituteSupportTickets";
-import InstituteSupportTicketDetails from "./features/dashboard/institute/InstituteSupportTicketDetails";
 
 import FeeWaiverForm from "./features/dashboard/student/FeeWaiverForm";
 import FeeWaiverRequests from "./features/dashboard/teacher/FeeWaiverRequests";
@@ -102,7 +97,6 @@ import PersonalizedPath from "./features/dashboard/student/PersonalizedPath";
 
 import TeacherPaymentHistory from "./features/dashboard/teacher/PaymentHistory";
 
-import InstitutePaymentHistory from "./features/dashboard/institute/PaymentHistory";
 
 import ManageMaterials from "./features/dashboard/teacher/ManageMaterials";
 import SelectClassForMaterials from "./features/dashboard/teacher/SelectClassForMaterials";
@@ -112,7 +106,7 @@ import StudyPackPaymentForm from "./features/dashboard/student/StudyPackPaymentF
 import TeacherList from "./features/dashboard/admin/TeacherList";
 import InstituteList from "./features/dashboard/admin/InstituteList";
 
-import AddTeacherPage from "./features/dashboard/institute/AddTeacherPage";
+
 
 import StudentLeaderboard from "./features/dashboard/student/StudentLeaderboard";
 
@@ -128,7 +122,7 @@ function App() {
             <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><Analytics/></ProtectedRoute>} />
 
             <Route path="/student/leaderboard" element={<StudentLeaderboard />} />
-            <Route path="/institute/add-teacher" element={<ProtectedRoute role="institute"><AddTeacherPage /></ProtectedRoute>} />
+            
             <Route path="/admin/teachers" element={<ProtectedRoute role="admin"><TeacherList /></ProtectedRoute>} />
             <Route path="/admin/institutes" element={<ProtectedRoute role="admin"><InstituteList /></ProtectedRoute>} />
             <Route path="/teacher/classes/select" element={<ProtectedRoute role="teacher"><SelectClassForMaterials /></ProtectedRoute>} />
@@ -137,7 +131,6 @@ function App() {
 
             <Route path="/teacher/classes/managematerials" element={<ProtectedRoute role="teacher"><ManageMaterials /></ProtectedRoute>} />
             <Route path="/teacher/payment-history" element={<ProtectedRoute role="teacher"><TeacherPaymentHistory /></ProtectedRoute>} />
-            <Route path="/institute/payment-history" element={<ProtectedRoute role="institute"><InstitutePaymentHistory /></ProtectedRoute>} />
 
 
             <Route path="/student/personalied-path" element={<ProtectedRoute role="student"><PersonalizedPath /></ProtectedRoute>} />
@@ -145,10 +138,7 @@ function App() {
             <Route path="/student/fee-waiver" element={<ProtectedRoute role="student"><FeeWaiverForm /></ProtectedRoute>} />
             <Route path="/teacher/fee-waiver-requests" element={<ProtectedRoute role="teacher"><FeeWaiverRequests /></ProtectedRoute>} />
 
-            <Route path="/institute/support-form" element={<ProtectedRoute role="institute"><InstituteSupportForm /></ProtectedRoute>} />
-            <Route path="/institute/support-tickets" element={<ProtectedRoute role="institute"><InstituteSupportTickets /></ProtectedRoute> } />
-            <Route  path="/institute/support/ticket/:ticketId" element={<ProtectedRoute role="institute"><InstituteSupportTicketDetails /> </ProtectedRoute>} />
-
+            
 
 
             <Route path="/admin/support/ticket"  element={ <ProtectedRoute role="admin"><AdminSupportTickets /></ProtectedRoute>} />
@@ -205,7 +195,6 @@ function App() {
                 <Route path="/student/dashboard/refund-history" element={<ProtectedRoute role="student"><RefundHistory /></ProtectedRoute>} /> {/* New route */}
                 
 
-                <Route path="/institute/dashboard" element={<ProtectedRoute role="institute"><InstituteDashboard /></ProtectedRoute>} />
                 <Route path="/admin/pages/edit-page/:slug" element={<AdminEditPage />} />
                 <Route path="/admin/edit-profile" element={<EditProfile />} />
                 <Route path="/student/edit-profile" element={<StudentEditProfile />} />
@@ -252,8 +241,6 @@ function App() {
 <Route path="/teacher/noticesview" element={<ProtectedRoute role="teacher"><TeacherNoticesView /> </ProtectedRoute>} />
 <Route path="/teacher/noticesview/:noticeId" element={<ProtectedRoute role="teacher"><TeacherNoticesView /></ProtectedRoute> }  />
 
-<Route path="/institute/notices/" element={<ProtectedRoute role="institute"><InstituteNoticesView  /> </ProtectedRoute>} />
-<Route path="/institute/notice/:noticeId" element={<ProtectedRoute role="institute"><InstituteNoticesView /></ProtectedRoute> }  />
 
 
 <Route path="/teacher/report" element={<ProtectedRoute role="teacher"> <Report /></ProtectedRoute>} />

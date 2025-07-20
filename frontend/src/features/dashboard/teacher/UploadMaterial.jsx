@@ -1,11 +1,33 @@
 import { useState, useEffect } from "react";
-import { Breadcrumbs, Link as MuiLink, Typography } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Typography } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import StudentSidebar from "../../../components/TeacherSidebar/index";
 import StudentHeader from "../../../components/TeacherHeader/index";
 import axios from "axios";
-import { Box, TextField, Button, Select, MenuItem, FormControl, InputLabel, Alert, Grid } from "@mui/material";
-import { InsertDriveFile, VideoLibrary, Link as LinkIcon, CalendarToday, ClassOutlined } from "@mui/icons-material";
+import { 
+    Box, 
+    TextField, 
+    Button, 
+    Select, 
+    MenuItem, 
+    FormControl, 
+    InputLabel, 
+    Alert, 
+    Grid,
+    Paper,
+    Fade,
+    Chip
+} from "@mui/material";
+import { 
+    InsertDriveFile, 
+    VideoLibrary, 
+    Link as LinkIcon, 
+    CalendarToday, 
+    ClassOutlined,
+    CloudUpload,
+    CheckCircle,
+    School
+} from "@mui/icons-material";
 
 const UploadMaterial = ({ classId }) => {
     const location = useLocation();
@@ -21,6 +43,7 @@ const UploadMaterial = ({ classId }) => {
     const [selectedClass, setSelectedClass] = useState(classId || "");
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -30,7 +53,7 @@ const UploadMaterial = ({ classId }) => {
         const handleResize = () => {
             const mobileView = window.innerWidth <= 768;
             setIsMobile(mobileView);
-            setIsSidebarCollapsed(mobileView); // Auto-collapse on mobile
+            setIsSidebarCollapsed(mobileView);
         };
 
         handleResize();
@@ -57,6 +80,7 @@ const UploadMaterial = ({ classId }) => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
+        setIsUploading(true);
 
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const config = {
@@ -94,277 +118,396 @@ const UploadMaterial = ({ classId }) => {
             setSelectedClass("");
         } catch (err) {
             setError(err.response?.data?.message || "Upload failed");
+        } finally {
+            setIsUploading(false);
         }
     };
 
-    const pathnames = location.pathname.split("/").filter((x) => x);
-    const breadcrumbItems = pathnames.map((value, index) => {
-        const last = index === pathnames.length - 1;
-        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-        const displayName = value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, ' ');
-
-        return last ? (
-            <Typography
-                key={to}
-                sx={{
-                    color: '#1f2937',
-                    fontWeight: 'medium',
-                    fontSize: { xs: '0.85rem', md: '0.875rem' },
-                }}
-            >
-                {displayName}
-            </Typography>
-        ) : (
-            <MuiLink
-                key={to}
-                component={Link}
-                to={to}
-                underline="none"
-                sx={{
-                    color: '#3b82f6',
-                    fontWeight: 500,
-                    fontSize: { xs: '0.85rem', md: '0.875rem' },
-                    '&:hover': {
-                        textDecoration: 'underline',
-                    },
-                }}
-            >
-                {displayName}
-            </MuiLink>
-        );
-    });
-
-    // Get the current page name for the tab title
-    const pageTitle = pathnames.length > 0
-        ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1).replace(/-/g, ' ')
-        : "Upload Material";
-
-    // Update document title when location changes
+    // Update document title
     useEffect(() => {
-        document.title = `${pageTitle} - EduConnect`;
-    }, [location, pageTitle]);
+        document.title = "Upload Material - EduConnect";
+    }, [location]);
+
+    const getTypeIcon = (materialType) => {
+        switch (materialType) {
+            case 'pdf': return <InsertDriveFile sx={{ color: '#ef4444' }} />;
+            case 'video': return <VideoLibrary sx={{ color: '#3b82f6' }} />;
+            case 'link': return <LinkIcon sx={{ color: '#10b981' }} />;
+            default: return <InsertDriveFile />;
+        }
+    };
+
+    const getTypeChip = (materialType) => {
+        const configs = {
+            pdf: { label: 'PDF Document', color: 'error' },
+            video: { label: 'Video File', color: 'primary' },
+            link: { label: 'External Link', color: 'success' }
+        };
+        return (
+            <Chip 
+                {...configs[materialType]} 
+                size="small" 
+                variant="outlined"
+                icon={getTypeIcon(materialType)}
+            />
+        );
+    };
 
     return (
-      <div className="bg-gray-50 min-h-screen">
-          <StudentHeader
-              isSidebarCollapsed={isSidebarCollapsed}
-              toggleSidebar={toggleSidebar}
-              isMobile={isMobile}
-          />
-          <div className="flex min-h-screen">
-              {/* Sidebar */}
-              <div className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
-                  isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
-              } bg-white border-r border-gray-200`}>
-                  <StudentSidebar
-                      isCollapsed={isSidebarCollapsed}
-                      toggleSidebar={toggleSidebar}
-                  />
-              </div>
+        <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+            <StudentHeader
+                isSidebarCollapsed={isSidebarCollapsed}
+                toggleSidebar={toggleSidebar}
+                isMobile={isMobile}
+            />
+            <div className="flex min-h-screen">
+                {/* Sidebar */}
+                <div className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ${
+                    isSidebarCollapsed ? "w-[60px]" : "w-[18%] md:w-[250px]"
+                } bg-white border-r border-gray-200 shadow-lg`}>
+                    <StudentSidebar
+                        isCollapsed={isSidebarCollapsed}
+                        toggleSidebar={toggleSidebar}
+                    />
+                </div>
 
-              {/* Main Content */}
-              <div className={`flex-1 transition-all duration-300 ${
-                  isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
-              }`}>
-                  {/* Breadcrumbs */}
-                  <div className={`py-3 px-4 md:px-6 fixed top-[64px] right-2 z-30 transition-all duration-300 ${
-                      isSidebarCollapsed ? "ml-[60px] w-[calc(100%-60px)]" : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
-                  } bg-white border-b border-gray-200 shadow-sm`}>
-                      <Breadcrumbs aria-label="breadcrumb" separator="›" className="text-gray-600">
-                          <MuiLink component={Link} to="/teacher/classes/uploadmaterials" className="hover:text-blue-600">
-                              Dashboard
-                          </MuiLink>
-                          {breadcrumbItems}
-                      </Breadcrumbs>
-                  </div>
+                {/* Main Content */}
+                <div className={`flex-1 transition-all duration-300 ${
+                    isSidebarCollapsed ? "ml-[60px]" : "ml-[18%] md:ml-[250px]"
+                }`}>
+                    {/* Header Section */}
+                    <div className="mt-[64px] p-6 md:p-8">
+                        <Fade in timeout={800}>
+                            <Box sx={{ mb: 4 }}>
+                                <Typography 
+                                    variant="h3" 
+                                    sx={{ 
+                                        fontWeight: 800,
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        backgroundClip: 'text',
+                                        color: 'transparent',
+                                        mb: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    <School sx={{ color: '#6366f1', fontSize: '2.5rem' }} />
+                                    Upload Class Material
+                                </Typography>
+                                <Typography 
+                                    variant="subtitle1" 
+                                    sx={{ 
+                                        color: 'text.secondary',
+                                        fontSize: '1.1rem',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    Share educational content with your students
+                                </Typography>
+                            </Box>
+                        </Fade>
 
-                  {/* Form Container */}
-                  <div className="mt-[104px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-104px)]">
-                      <Box sx={{ 
-                          maxWidth: 800, 
-                          mx: "auto", 
-                          p: 4,
-                          bgcolor: 'background.paper',
-                          borderRadius: 4,
-                          boxShadow: '0 8px 32px rgba(0,0,0,0.05)'
-                      }}>
-                          <Typography variant="h4" gutterBottom sx={{ 
-                              mb: 4, 
-                              color: 'text.primary',
-                              fontWeight: 700,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5
-                          }}>
-                              
-                              Upload Class Material
-                          </Typography>
+                        {/* Form Container */}
+                        <Fade in timeout={1000}>
+                            <Paper 
+                                elevation={0}
+                                sx={{ 
+                                    maxWidth: 900, 
+                                    mx: "auto", 
+                                    p: { xs: 3, md: 5 },
+                                    borderRadius: 4,
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    backdropFilter: 'blur(20px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                                }}
+                            >
+                                {(error || success) && (
+                                    <Fade in timeout={500}>
+                                        <Alert 
+                                            severity={error ? 'error' : 'success'} 
+                                            sx={{ 
+                                                mb: 4,
+                                                borderRadius: 3,
+                                                '& .MuiAlert-icon': {
+                                                    fontSize: '1.5rem'
+                                                }
+                                            }}
+                                            icon={success ? <CheckCircle /> : undefined}
+                                        >
+                                            {error || success}
+                                        </Alert>
+                                    </Fade>
+                                )}
 
-                          {(error || success) && (
-                              <Alert severity={error ? 'error' : 'success'} sx={{ mb: 3 }}>
-                                  {error || success}
-                              </Alert>
-                          )}
+                                <form onSubmit={handleSubmit}>
+                                    <Grid container spacing={4}>
+                                        <Grid item xs={12} md={6}>
+                                            <FormControl fullWidth variant="outlined">
+                                                <InputLabel sx={{ fontWeight: 600 }}>Select Class</InputLabel>
+                                                <Select
+                                                    value={selectedClass}
+                                                    onChange={(e) => setSelectedClass(e.target.value)}
+                                                    required
+                                                    sx={{
+                                                        borderRadius: 3,
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            borderWidth: 2,
+                                                        }
+                                                    }}
+                                                >
+                                                    <MenuItem value="">Select Class</MenuItem>
+                                                    {classes.map(cls => (
+                                                        <MenuItem key={cls._id} value={cls._id}>
+                                                            <Box display="flex" alignItems="center" gap={1}>
+                                                                <ClassOutlined sx={{ color: '#6366f1' }} />
+                                                                {cls.subject}
+                                                            </Box>
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
 
-                          <form onSubmit={handleSubmit}>
-                              <Grid container spacing={3}>
-                                  <Grid item xs={12} md={6}>
-                                      <FormControl fullWidth variant="outlined">
-                                          <InputLabel>Select Class</InputLabel>
-                                          <Select
-                                              value={selectedClass}
-                                              onChange={(e) => setSelectedClass(e.target.value)}
-                                              required
-                                              startAdornment={<ClassOutlined sx={{ color: 'action.active', mr: 1 }} />}
-                                          >
-                                              <MenuItem value="">Select Class</MenuItem>
-                                              {classes.map(cls => (
-                                                  <MenuItem key={cls._id} value={cls._id}>
-                                                      {cls.subject}
-                                                  </MenuItem>
-                                              ))}
-                                          </Select>
-                                      </FormControl>
-                                  </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                fullWidth
+                                                label="Lesson Name"
+                                                value={lessonName}
+                                                onChange={(e) => setLessonName(e.target.value)}
+                                                required
+                                                sx={{
+                                                    '& .MuiOutlinedInput-root': {
+                                                        borderRadius: 3,
+                                                        '& fieldset': {
+                                                            borderWidth: 2,
+                                                        }
+                                                    },
+                                                    '& .MuiInputLabel-root': {
+                                                        fontWeight: 600
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    startAdornment: (
+                                                        <VideoLibrary sx={{ color: '#6366f1', mr: 1 }} />
+                                                    ),
+                                                }}
+                                            />
+                                        </Grid>
 
-                                  <Grid item xs={12} md={6}>
-                                      <TextField
-                                          fullWidth
-                                          label="Lesson Name"
-                                          value={lessonName}
-                                          onChange={(e) => setLessonName(e.target.value)}
-                                          required
-                                          InputProps={{
-                                              startAdornment: (
-                                                  <VideoLibrary sx={{ color: 'action.active', mr: 1 }} />
-                                              ),
-                                          }}
-                                      />
-                                  </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                fullWidth
+                                                label="Material Title"
+                                                value={title}
+                                                onChange={(e) => setTitle(e.target.value)}
+                                                required
+                                                sx={{
+                                                    '& .MuiOutlinedInput-root': {
+                                                        borderRadius: 3,
+                                                        '& fieldset': {
+                                                            borderWidth: 2,
+                                                        }
+                                                    },
+                                                    '& .MuiInputLabel-root': {
+                                                        fontWeight: 600
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    startAdornment: (
+                                                        <InsertDriveFile sx={{ color: '#6366f1', mr: 1 }} />
+                                                    ),
+                                                }}
+                                            />
+                                        </Grid>
 
-                                  <Grid item xs={12} md={6}>
-                                      <TextField
-                                          fullWidth
-                                          label="Material Title"
-                                          value={title}
-                                          onChange={(e) => setTitle(e.target.value)}
-                                          required
-                                          InputProps={{
-                                              startAdornment: (
-                                                  <InsertDriveFile sx={{ color: 'action.active', mr: 1 }} />
-                                              ),
-                                          }}
-                                      />
-                                  </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <FormControl fullWidth>
+                                               
+                                                <Select
+                                                    value={type}
+                                                    onChange={(e) => setType(e.target.value)}
+                                                    required
+                                                    sx={{
+                                                        borderRadius: 3,
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            borderWidth: 2,
+                                                        }
+                                                    }}
+                                                    renderValue={(selected) => (
+                                                        <Box display="flex" alignItems="center" gap={1}>
+                                                            {getTypeChip(selected)}
+                                                        </Box>
+                                                    )}
+                                                >
+                                                    <MenuItem value="pdf">
+                                                        <Box display="flex" alignItems="center" gap={1}>
+                                                            <InsertDriveFile sx={{ color: '#ef4444' }} />
+                                                            PDF Document
+                                                        </Box>
+                                                    </MenuItem>
+                                                    <MenuItem value="video">
+                                                        <Box display="flex" alignItems="center" gap={1}>
+                                                            <VideoLibrary sx={{ color: '#3b82f6' }} />
+                                                            Video File
+                                                        </Box>
+                                                    </MenuItem>
+                                                    <MenuItem value="link">
+                                                        <Box display="flex" alignItems="center" gap={1}>
+                                                            <LinkIcon sx={{ color: '#10b981' }} />
+                                                            External Link
+                                                        </Box>
+                                                    </MenuItem>
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
 
-                                  <Grid item xs={12} md={6}>
-                                      <FormControl fullWidth>
-                                          <InputLabel>Content Type</InputLabel>
-                                          <Select
-                                              value={type}
-                                              onChange={(e) => setType(e.target.value)}
-                                              required
-                                          >
-                                              <MenuItem value="pdf">PDF Document</MenuItem>
-                                              <MenuItem value="video">Video File</MenuItem>
-                                              <MenuItem value="link">External Link</MenuItem>
-                                          </Select>
-                                      </FormControl>
-                                  </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                fullWidth
+                                                label="Upload Date"
+                                                type="date"
+                                                value={uploadDate}
+                                                onChange={(e) => setUploadDate(e.target.value)}
+                                                InputLabelProps={{ shrink: true }}
+                                                required
+                                                sx={{
+                                                    '& .MuiOutlinedInput-root': {
+                                                        borderRadius: 3,
+                                                        '& fieldset': {
+                                                            borderWidth: 2,
+                                                        }
+                                                    },
+                                                    '& .MuiInputLabel-root': {
+                                                        fontWeight: 600
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    startAdornment: (
+                                                        <CalendarToday sx={{ color: '#6366f1', mr: 1 }} />
+                                                    ),
+                                                }}
+                                            />
+                                        </Grid>
 
-                                  <Grid item xs={12} md={6}>
-                                      <TextField
-                                          fullWidth
-                                          label="Upload Date"
-                                          type="date"
-                                          value={uploadDate}
-                                          onChange={(e) => setUploadDate(e.target.value)}
-                                          InputLabelProps={{ shrink: true }}
-                                          required
-                                          InputProps={{
-                                              startAdornment: (
-                                                  <CalendarToday sx={{ color: 'action.active', mr: 1 }} />
-                                              ),
-                                          }}
-                                      />
-                                  </Grid>
+                                        <Grid item xs={12}>
+                                            {type === "link" ? (
+                                                <TextField
+                                                    fullWidth
+                                                    label="Content URL"
+                                                    value={content}
+                                                    onChange={(e) => setContent(e.target.value)}
+                                                    required
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            borderRadius: 3,
+                                                            '& fieldset': {
+                                                                borderWidth: 2,
+                                                            }
+                                                        },
+                                                        '& .MuiInputLabel-root': {
+                                                            fontWeight: 600
+                                                        }
+                                                    }}
+                                                    InputProps={{
+                                                        startAdornment: (
+                                                            <LinkIcon sx={{ color: '#10b981', mr: 1 }} />
+                                                        ),
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Paper 
+                                                    sx={{ 
+                                                        p: 4,
+                                                        borderRadius: 3,
+                                                        border: '2px dashed #d1d5db',
+                                                        backgroundColor: '#f9fafb',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            borderColor: '#6366f1',
+                                                            backgroundColor: '#f0f9ff'
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+                                                        <CloudUpload sx={{ fontSize: '3rem', color: '#6366f1' }} />
+                                                        <Button
+                                                            variant="contained"
+                                                            component="label"
+                                                            size="large"
+                                                            startIcon={getTypeIcon(type)}
+                                                            sx={{
+                                                                borderRadius: 3,
+                                                                px: 4,
+                                                                py: 1.5,
+                                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                                '&:hover': {
+                                                                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                                                                }
+                                                            }}
+                                                        >
+                                                            Choose {type === 'pdf' ? 'PDF' : 'Video'} File
+                                                            <input
+                                                                type="file"
+                                                                hidden
+                                                                accept={type === "pdf" ? ".pdf" : ".mp4"}
+                                                                onChange={(e) => setFile(e.target.files[0])}
+                                                                required
+                                                            />
+                                                        </Button>
+                                                        {file && (
+                                                            <Chip
+                                                                icon={<CheckCircle />}
+                                                                label={`Selected: ${file.name}`}
+                                                                color="success"
+                                                                variant="outlined"
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                </Paper>
+                                            )}
+                                        </Grid>
 
-                                  <Grid item xs={12}>
-                                      {type === "link" ? (
-                                          <TextField
-                                              fullWidth
-                                              label="Content URL"
-                                              value={content}
-                                              onChange={(e) => setContent(e.target.value)}
-                                              required
-                                              InputProps={{
-                                                  startAdornment: (
-                                                      <LinkIcon sx={{ color: 'action.active', mr: 1 }} />
-                                                  ),
-                                              }}
-                                          />
-                                      ) : (
-                                          <Box sx={{ 
-                                              border: 1, 
-                                              borderColor: 'divider', 
-                                              borderRadius: 1, 
-                                              p: 2,
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              gap: 2
-                                          }}>
-                                              <Button
-                                                  variant="contained"
-                                                  component="label"
-                                                  startIcon={<InsertDriveFile />}
-                                              >
-                                                  Upload {type === 'pdf' ? 'PDF' : 'MP4'}
-                                                  <input
-                                                      type="file"
-                                                      hidden
-                                                      accept={type === "pdf" ? ".pdf" : ".mp4"}
-                                                      onChange={(e) => setFile(e.target.files[0])}
-                                                      required
-                                                  />
-                                              </Button>
-                                              {file && (
-                                                  <Typography variant="body2" color="textSecondary">
-                                                      Selected: {file.name}
-                                                  </Typography>
-                                              )}
-                                          </Box>
-                                      )}
-                                  </Grid>
-
-                                  <Grid item xs={12}>
-                                      <Button
-                                          type="submit"
-                                          variant="contained"
-                                          size="large"
-                                          fullWidth
-                                          sx={{
-                                              mt: 2,
-                                              py: 1.5,
-                                              fontSize: 16,
-                                              fontWeight: 600,
-                                              background: 'linear-gradient(45deg, #4f46e5 30%, #6366f1 90%)',
-                                              '&:hover': {
-                                                  background: 'linear-gradient(45deg, #4338ca 30%, #4f46e5 90%)',
-                                              }
-                                          }}
-                                          startIcon={<InsertDriveFile />}
-                                      >
-                                          Upload Material
-                                      </Button>
-                                  </Grid>
-                              </Grid>
-                          </form>
-                      </Box>
-                  </div>
-              </div>
-          </div>
-      </div>
-  );
+                                        <Grid item xs={12}>
+                                            <Button
+                                                type="submit"
+                                                variant="contained"
+                                                size="large"
+                                                fullWidth
+                                                disabled={isUploading}
+                                                sx={{
+                                                    mt: 3,
+                                                    py: 2,
+                                                    fontSize: 18,
+                                                    fontWeight: 700,
+                                                    borderRadius: 3,
+                                                    background: isUploading 
+                                                        ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                    '&:hover': {
+                                                        background: isUploading 
+                                                            ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                                            : 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                                                        transform: 'translateY(-2px)',
+                                                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)'
+                                                    },
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                                startIcon={isUploading ? <CloudUpload className="animate-pulse" /> : <CloudUpload />}
+                                            >
+                                                {isUploading ? 'Uploading Material...' : 'Upload Material'}
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </form>
+                            </Paper>
+                        </Fade>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default UploadMaterial;

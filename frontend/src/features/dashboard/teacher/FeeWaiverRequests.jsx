@@ -7,9 +7,8 @@ import StudentHeader from "../../../components/TeacherHeader/index";
 
 import axios from "axios";
 import { Document, Page, pdfjs } from "react-pdf";
-import { HiPaperClip } from "react-icons/hi";
-
-
+import { HiPaperClip, HiEye, HiCheckCircle, HiXCircle, HiClock } from "react-icons/hi";
+import { BiMessageDetail } from "react-icons/bi";
 
 // Set up the PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -21,8 +20,10 @@ const FeeWaiverRequests = () => {
     const [loading, setLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [openDocumentDialog, setOpenDocumentDialog] = useState(false);
+    const [openReasonDialog, setOpenReasonDialog] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [selectedDocument, setSelectedDocument] = useState(null);
+    const [selectedReason, setSelectedReason] = useState("");
     const [status, setStatus] = useState("");
     const [teacherComments, setTeacherComments] = useState("");
     const [discountPercentage, setDiscountPercentage] = useState(0);
@@ -33,7 +34,6 @@ const FeeWaiverRequests = () => {
   const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -66,6 +66,16 @@ const handleOpenDialog = (request) => {
 const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedRequest(null);
+};
+
+const handleOpenReasonDialog = (reason) => {
+    setSelectedReason(reason);
+    setOpenReasonDialog(true);
+};
+
+const handleCloseReasonDialog = () => {
+    setOpenReasonDialog(false);
+    setSelectedReason("");
 };
 
 const handleSubmit = async () => {
@@ -126,6 +136,28 @@ const getFileType = (filePath) => {
     return ['jpg', 'jpeg', 'png'].includes(extension) ? 'image' : extension === 'pdf' ? 'pdf' : null;
 };
 
+const getStatusIcon = (status) => {
+    switch (status) {
+        case "Approved":
+            return <HiCheckCircle className="w-4 h-4 text-green-600" />;
+        case "Rejected":
+            return <HiXCircle className="w-4 h-4 text-red-600" />;
+        default:
+            return <HiClock className="w-4 h-4 text-yellow-600" />;
+    }
+};
+
+const getStatusColor = (status) => {
+    switch (status) {
+        case "Approved":
+            return "bg-green-100 text-green-800 border-green-200";
+        case "Rejected":
+            return "bg-red-100 text-red-800 border-red-200";
+        default:
+            return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    }
+};
+
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
@@ -134,7 +166,7 @@ const getFileType = (filePath) => {
     const handleResize = () => {
       const mobileView = window.innerWidth <= 768;
       setIsMobile(mobileView);
-      setIsSidebarCollapsed(mobileView); // Auto-collapse on mobile
+      setIsSidebarCollapsed(mobileView);
     };
 
     handleResize();
@@ -165,14 +197,12 @@ const getFileType = (filePath) => {
     );
   });
 
-  // Get the current page name for the tab title
   const pageTitle = pathnames.length > 0 
     ? pathnames[pathnames.length - 1].charAt(0).toUpperCase() + pathnames[pathnames.length - 1].slice(1)
-    : "Dashboard"; // Default title if no pathnames
+    : "Dashboard";
 
-  // Update document title when location changes
   useEffect(() => {
-    document.title = `TeacherDashboard - EduConnect`; // You can customize the format
+    document.title = `TeacherDashboard - EduConnect`;
   }, [location, pageTitle]);
 
   return (
@@ -207,234 +237,296 @@ const getFileType = (filePath) => {
                 : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
             }`}
           >
-            {/* Breadcrumbs */}
-        <div
-          className={`mt-[50px] py-2 px-4 md:px-6 bg-gray-100 border-b transition-all duration-300 z-30 fixed top-0 left-0 w-full ${
-            isSidebarCollapsed
-              ? "ml-[60px] w-[calc(100%-60px)]"
-              : "ml-[18%] w-[calc(100%-18%)] md:ml-[250px] md:w-[calc(100%-250px)]"
-          }`}
-        >
-          <Breadcrumbs aria-label="breadcrumb">
-            {breadcrumbItems}
-          </Breadcrumbs>
-          </div></div>
+            <Breadcrumbs aria-label="breadcrumb">
+              {breadcrumbItems}
+            </Breadcrumbs>
+          </div>
         
-          
           <div className="mt-[90px] p-4 md:p-6 overflow-y-auto h-[calc(100vh-90px)]">
-          <div className="max-w-7xl mx-auto p-6 bg-white-50 min-h-screen">
-            <div className="bg-white rounded-xl shadow-md border border-blue-100 p-8">
+            <div className="max-w-7xl mx-auto p-6 bg-white-50 min-h-screen">
+              <div className="bg-white rounded-xl shadow-md border border-blue-100 p-8">
                 <div className="flex items-center gap-3 mb-6">
-                    <h2 className="text-3xl font-bold text-blue-900">Fee Waiver Requests</h2>
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BiMessageDetail className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-blue-900">Fee Waiver Requests</h2>
                 </div>
+
                 {error && (
-                    <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-                        {error}
+                  <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <div className="flex items-center">
+                      <HiXCircle className="w-5 h-5 mr-2" />
+                      {error}
                     </div>
+                  </div>
                 )}
+
                 {loading ? (
-                    <div className="flex justify-center py-4">
-                        <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
-                    </div>
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-blue-600">Loading requests...</span>
+                  </div>
                 ) : requests.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full table-auto">
-                            <thead>
-                                <tr className="bg-blue-50 text-blue-900">
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">Student</th>
-                                    
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">Reason</th>
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">Document</th>
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">Created At</th>
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {requests.map((request) => (
-                                    <tr key={request._id} className="border-b border-blue-100 hover:bg-blue-50 transition-all duration-300">
-                                        <td className="px-4 py-3 text-blue-600">
-                                            {request.studentId?.name || "Unknown Student"}
-                                        </td>
-                                        
-                                        <td className="px-4 py-3 text-blue-600">
-                                            {request.reason.length > 50 ? request.reason.substring(0, 50) + "..." : request.reason}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {request.documentPath ? (
-                                                <button
-                                                    onClick={() => handleOpenDocumentDialog(request.documentPath)}
-                                                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
-                                                >
-                                                    <HiPaperClip className="w-4 h-4" />
-                                                    <span className="text-sm">View</span>
-                                                </button>
-                                            ) : (
-                                                <span className="text-blue-600 text-sm">No Document</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-blue-600">{request.status}</td>
-                                        <td className="px-4 py-3 text-blue-600">{new Date(request.createdAt).toLocaleString()}</td>
-                                        <td className="px-4 py-3">
-                                            {request.status === "Pending" && (
-                                                <button
-                                                    onClick={() => handleOpenDialog(request)}
-                                                    className="bg-blue-600 text-white px-4 py-1 rounded-md hover:bg-blue-700 transition-all duration-300 text-sm"
-                                                >
-                                                    Review
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <div className="text-center p-4 bg-white rounded-lg border border-blue-100">
-                        <p className="text-blue-600">No fee waiver requests available.</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Dialog for approving/rejecting fee waiver requests */}
-            {openDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
-                        <h3 className="text-xl font-bold text-blue-900 mb-4">Review Fee Waiver Request</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-blue-900 mb-1">Status</label>
-                                <select
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300"
+                  <div className="overflow-x-auto">
+                    <table className="w-full table-auto">
+                      <thead>
+                        <tr className="bg-blue-50 text-blue-900">
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Student</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Reason</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Document</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Created At</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {requests.map((request) => (
+                          <tr key={request._id} className="border-b border-blue-100 hover:bg-blue-50 transition-all duration-300">
+                            <td className="px-4 py-3 text-blue-600">
+                              {request.studentId?.name || "Unknown Student"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-600 max-w-xs">
+                              <div className="relative">
+                                <p className="truncate">
+                                  {request.reason.length > 60 
+                                    ? `${request.reason.substring(0, 60)}...`
+                                    : request.reason
+                                  }
+                                </p>
+                                {request.reason.length > 60 && (
+                                  <button
+                                    onClick={() => handleOpenReasonDialog(request.reason)}
+                                    className="text-blue-600 hover:text-blue-800 text-xs font-medium mt-1 flex items-center gap-1"
+                                  >
+                                    <HiEye className="w-3 h-3" />
+                                    View Full
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {request.documentPath ? (
+                                <button
+                                  onClick={() => handleOpenDocumentDialog(request.documentPath)}
+                                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
                                 >
-                                    <option value="">Select status</option>
-                                    <option value="Approved">Approve</option>
-                                    <option value="Rejected">Reject</option>
-                                </select>
-                            </div>
-                            {status === "Approved" && (
-                                <div>
-                                    <label className="block text-sm font-medium text-blue-900 mb-1">Discount Percentage</label>
-                                    <input
-                                        type="number"
-                                        value={discountPercentage}
-                                        onChange={(e) => setDiscountPercentage(Number(e.target.value))}
-                                        min="0"
-                                        max="100"
-                                        required
-                                        className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300"
-                                    />
-                                </div>
-                            )}
-                            <div>
-                                <label className="block text-sm font-medium text-blue-900 mb-1">Comments (Optional)</label>
-                                <textarea
-                                    value={teacherComments}
-                                    onChange={(e) => setTeacherComments(e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300 h-24 resize-none"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-6 flex justify-end gap-2">
-                            <button
-                                onClick={handleCloseDialog}
-                                className="px-4 py-2 bg-gray-300 text-gray-900 rounded-md hover:bg-gray-400 transition-all duration-300"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!status}
-                                className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 ${
-                                    !status ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
-                            >
-                                Submit
-                            </button>
-                        </div>
+                                  <HiPaperClip className="w-4 h-4" />
+                                  <span className="text-sm">View</span>
+                                </button>
+                              ) : (
+                                <span className="text-gray-400 text-sm">No Document</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
+                                {getStatusIcon(request.status)}
+                                {request.status}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-blue-600 text-sm">
+                              {new Date(request.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </td>
+                            <td className="px-4 py-3">
+                              {request.status === "Pending" && (
+                                <button
+                                  onClick={() => handleOpenDialog(request)}
+                                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-all duration-300 text-sm font-medium"
+                                >
+                                  Review
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center p-8 bg-white rounded-lg border border-blue-100">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BiMessageDetail className="w-8 h-8 text-blue-500" />
                     </div>
-                </div>
-            )}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Fee Waiver Requests</h3>
+                    <p className="text-blue-600">No fee waiver requests available at the moment.</p>
+                  </div>
+                )}
+              </div>
 
-            {/* Dialog for viewing documents */}
-            {openDocumentDialog && (
+              {/* Reason Dialog */}
+              {openReasonDialog && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-3xl w-full">
-                        <h3 className="text-xl font-bold text-blue-900 mb-4">View Document</h3>
-                        <div className="text-center">
-                            {selectedDocument && (
-                                <>
-                                    {getFileType(selectedDocument) === "pdf" ? (
-                                        <div>
-                                            <Document
-                                                file={`http://localhost:5000${selectedDocument}`}
-                                                onLoadSuccess={onDocumentLoadSuccess}
-                                                onLoadError={(error) => setError("Error loading PDF: " + error.message)}
-                                            >
-                                                <Page pageNumber={pageNumber} />
-                                            </Document>
-                                            <div className="mt-3">
-                                                <p className="text-blue-600 text-sm">
-                                                    Page {pageNumber} of {numPages}
-                                                </p>
-                                                <div className="flex justify-center gap-3 mt-2">
-                                                    <button
-                                                        onClick={handlePreviousPage}
-                                                        disabled={pageNumber <= 1}
-                                                        className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
-                                                    >
-                                                        Previous
-                                                    </button>
-                                                    <button
-                                                        onClick={handleNextPage}
-                                                        disabled={pageNumber >= numPages}
-                                                        className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
-                                                    >
-                                                        Next
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : getFileType(selectedDocument) === "image" ? (
-                                        <div>
-                                            {imageError ? (
-                                                <p className="text-red-600">{imageError}</p>
-                                            ) : (
-                                                <img
-                                                    src={`http://localhost:5000${selectedDocument}`}
-                                                    alt="Fee Waiver Document"
-                                                    className="max-w-full h-auto rounded-md mx-auto"
-                                                    style={{ maxHeight: "500px" }}
-                                                    onError={handleImageError}
-                                                />
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <p className="text-red-600">Unsupported file type</p>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                onClick={handleCloseDocumentDialog}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300"
-                            >
-                                Close
-                            </button>
-                        </div>
+                  <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+                        <BiMessageDetail className="w-5 h-5" />
+                        Request Reason
+                      </h3>
+                      <button
+                        onClick={handleCloseReasonDialog}
+                        className="text-gray-400 hover:text-gray-600 text-2xl"
+                      >
+                        ×
+                      </button>
                     </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {selectedReason}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={handleCloseReasonDialog}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
                 </div>
-            )}
-        </div>
-            
+              )}
+
+              {/* Review Dialog */}
+              {openDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
+                    <h3 className="text-xl font-bold text-blue-900 mb-4">Review Fee Waiver Request</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-blue-900 mb-1">Status</label>
+                        <select
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                          required
+                          className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300"
+                        >
+                          <option value="">Select status</option>
+                          <option value="Approved">Approve</option>
+                          <option value="Rejected">Reject</option>
+                        </select>
+                      </div>
+                      {status === "Approved" && (
+                        <div>
+                          <label className="block text-sm font-medium text-blue-900 mb-1">Discount Percentage</label>
+                          <input
+                            type="number"
+                            value={discountPercentage}
+                            onChange={(e) => setDiscountPercentage(Number(e.target.value))}
+                            min="0"
+                            max="100"
+                            required
+                            className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <label className="block text-sm font-medium text-blue-900 mb-1">Comments (Optional)</label>
+                        <textarea
+                          value={teacherComments}
+                          onChange={(e) => setTeacherComments(e.target.value)}
+                          className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 border-gray-300 h-24 resize-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-end gap-2">
+                      <button
+                        onClick={handleCloseDialog}
+                        className="px-4 py-2 bg-gray-300 text-gray-900 rounded-md hover:bg-gray-400 transition-all duration-300"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmit}
+                        disabled={!status}
+                        className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300 ${
+                          !status ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Document Dialog */}
+              {openDocumentDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-xl shadow-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-auto">
+                    <h3 className="text-xl font-bold text-blue-900 mb-4">View Document</h3>
+                    <div className="text-center">
+                      {selectedDocument && (
+                        <>
+                          {getFileType(selectedDocument) === "pdf" ? (
+                            <div>
+                              <Document
+                                file={`http://localhost:5000${selectedDocument}`}
+                                onLoadSuccess={onDocumentLoadSuccess}
+                                onLoadError={(error) => setError("Error loading PDF: " + error.message)}
+                              >
+                                <Page pageNumber={pageNumber} />
+                              </Document>
+                              <div className="mt-3">
+                                <p className="text-blue-600 text-sm">
+                                  Page {pageNumber} of {numPages}
+                                </p>
+                                <div className="flex justify-center gap-3 mt-2">
+                                  <button
+                                    onClick={handlePreviousPage}
+                                    disabled={pageNumber <= 1}
+                                    className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
+                                  >
+                                    Previous
+                                  </button>
+                                  <button
+                                    onClick={handleNextPage}
+                                    disabled={pageNumber >= numPages}
+                                    className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-all duration-300"
+                                  >
+                                    Next
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : getFileType(selectedDocument) === "image" ? (
+                            <div>
+                              {imageError ? (
+                                <p className="text-red-600">{imageError}</p>
+                              ) : (
+                                <img
+                                  src={`http://localhost:5000${selectedDocument}`}
+                                  alt="Fee Waiver Document"
+                                  className="max-w-full h-auto rounded-md mx-auto"
+                                  style={{ maxHeight: "500px" }}
+                                  onError={handleImageError}
+                                />
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-red-600">Unsupported file type</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={handleCloseDocumentDialog}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-300"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
